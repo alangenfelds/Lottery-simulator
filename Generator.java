@@ -1,45 +1,83 @@
-import java.util.*;
-import java.util.Map;
+package com.javarush.test.Lottery_MT;
 
-/**
- * Created by Artur on 13.03.2016.
- */
-public class Generator
+import java.util.Arrays;
+import java.util.Random;
+
+public class Generator extends Thread
 {
-    public static void main(String[] args)
+
+    int pos1,pos2,pos3,pos4,pos5;
+    Random rand = new Random(100);
+    int[] result = new int[6];
+    int[] ticket = new int[6];
+
+    public Generator(int[] ticket)
     {
-        Map<Integer,Integer> numbers = new HashMap<Integer, Integer>();
-        int max=48; // max value in lottery 1..max
-        Random rand = new Random(100);
-        int c=0,num=0;
+        this.ticket = ticket;
+    }
 
-        //generating randoms
-        while (c<Integer.MAX_VALUE)
+    @Override
+    public void run()
+    {
+        System.out.println(Thread.currentThread().getName()+" STARTING");
+        while (result[0]!=ticket[0] || result[1]!=ticket[1] ||result[2]!=ticket[2] || result[3]!=ticket[3] || result[4]!=ticket[4] || result[5]!=ticket[5])
         {
+        //------------GENERIRUEM MASSIV S REZULTATOM---------------
+            if (isInterrupted()) break;
             rand = new Random();
-            num=rand.nextInt(max)+1;
-        //    System.out.println(num);
-            if (numbers.containsKey(num)) numbers.put(num,numbers.get(num)+1);
-            else numbers.put(num,1);
-            c++;
-        }
+            result[0]=rand.nextInt(48)+1;   //pervij element ljuboj iz 48
+            //proverka na povtori s predidushimi nomerami
 
-        //sort by values
-        TreeMap<Integer, Integer> sortedMap = new TreeMap<Integer, Integer>();
-        for (Map.Entry entry : numbers.entrySet()) {
-            sortedMap.put((Integer) entry.getValue(), (Integer)entry.getKey());
-        }
+            rand = new Random();
+            pos1=rand.nextInt(48)+1;
+            while (pos1 == result[0]){						//vtoroj element dolzen otlichatsa ot pervogo
+                rand = new Random();
+                pos1=rand.nextInt(47)+1;
+            }
+            result[1]=pos1;
+            //--------------------------------------
+            rand = new Random();
+            pos2=rand.nextInt(48)+1;
+            while ((pos2 == result[0]) || (pos2 == result[1])){  //tretij element dolzen otlichatsa ot vseh predidushih i t.d.
+                rand = new Random();
+                pos2=rand.nextInt(48)+1;
+            }
+            result[2]=pos2;
+            //------------------------------------------
+            rand = new Random();
+            pos3=rand.nextInt(48)+1;
+            while ((pos3 == result[0]) || (pos3 == result[1]) || (pos3 == result[2])){
+                rand = new Random();
+                pos3=rand.nextInt(48)+1;
+            }
+            result[3]=pos3;
+            //------------------------------------------
+            rand = new Random();
+            pos4=rand.nextInt(48)+1;
+            while ((pos4 == result[0]) || (pos4 == result[1]) || (pos4 == result[2]) || (pos4 == result[3])){
+                rand = new Random();
+                pos4=rand.nextInt(48)+1;
+            }
+            result[4]=pos4;
+            //------------------------------------------
+            rand = new Random();
+            pos5=rand.nextInt(48)+1;
+            while ((pos5 == result[0]) || (pos5 == result[1]) || (pos5 == result[2]) || (pos5 == result[3]) || (pos5 == result[4])){
+                rand = new Random();
+                pos5=rand.nextInt(48)+1;
+            }
+            result[5]=pos5;
 
-        for (Map.Entry<Integer, Integer> entry : numbers.entrySet())
+            //-----------------REZULTAT SGENERIROVAN---------------------------
+            Arrays.sort(result);
+            Lottery_MT.games++;
+        } // end of While
+        if (!isInterrupted())
         {
-            System.out.println(entry.getValue()+": counter="+entry.getKey());
+            System.out.println("You won 6 from 6 after "+Lottery_MT.games+" games ("+Lottery_MT.games/54+") years.");
+            System.out.println("Result numbers: "+Arrays.toString(result)+" by "+Thread.currentThread().getName());
         }
-        System.out.println("--------------------");
-        //printing
-        for (Map.Entry<Integer, Integer> entry : sortedMap.entrySet())
-        {
-            System.out.println(entry.getValue()+": counter="+entry.getKey());
-        }
+        else System.out.println(Thread.currentThread().getName()+" Interrupted");
 
     }
 }
